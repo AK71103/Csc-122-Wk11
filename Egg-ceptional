@@ -1,0 +1,106 @@
+// Egg-ceptional
+// Alexander w kazantzis
+// 11-7-26
+
+#include <iostream>
+#include <string>
+#include <memory>
+#include <stdexcept>
+#include <array>
+
+using namespace std;
+
+// Exception Bad Egg
+class Bad_Egg : public exception{
+   public:
+   const char* what() const noexcept override{
+      return "This Egg is Rotten!";
+   }
+};
+ class Egg { //abstract class Egg
+   private:
+   const string Size;
+   const string Flavor;
+   public:
+   Egg(string S, string F): Size(S),Flavor(F){}
+    
+   string Get_Size() const{
+      return Size;
+   }
+
+   string Get_Flavor() const{
+      return Flavor;
+   }
+   virtual void Eat_egg() const = 0;
+   virtual ~Egg() = default;
+ };
+
+class Chicken_Egg:public Egg{ //Chicken Egg
+   public:
+   Chicken_Egg(): Egg("Medium","Savory") {}
+   void Eat_egg() const override{
+      cout<< "You eat a Chicken egg, it's delicous!" <<endl;
+   }
+ };
+
+class Duck_Egg:public Egg{ //Duck Egg
+   public:
+
+   Duck_Egg(): Egg("Large","Rich") {}
+   void Eat_egg() const override{
+      cout<< "You eat a Duck egg, it's got a rich, savory taste!" <<endl;
+   }
+ };
+class Rotten_Egg:public Egg{ //Rotten Egg
+   public:
+   Rotten_Egg() : Egg("Large","God-Awful") {}
+   void Eat_egg() const override{
+   throw Bad_Egg();
+   }
+ };
+class Carton {
+   private:
+   static const int Capacity = 12;
+   array<unique_ptr<Egg>, Capacity> eggs;
+   public:
+   //Add Egg to Carton
+   bool AddEgg(unique_ptr<Egg> egg) {
+      for (auto& slot : eggs) {
+         if (slot == nullptr) {
+            slot = move(egg);
+            return true;
+         }
+      }
+      return false;
+   }
+   void remove_and_eat(int index) {
+        if (index < 0 || index >= Capacity || eggs[index] == nullptr) {
+            cout << "There is no egg in that position." << endl;
+            return;
+        }
+
+        // Remove the egg from the carton
+        unique_ptr<Egg> egg = move(eggs[index]);
+
+        try {
+            egg->Eat_egg();
+        }
+        catch (const Bad_Egg& e) {
+            cout << "Warning: There was a bad egg!" << endl;
+        }
+   }
+};
+
+
+int main() {
+   Carton carton;
+   //Fill the carton with eggs
+   carton.AddEgg(make_unique<Chicken_Egg>());
+   carton.AddEgg(make_unique<Duck_Egg>());
+   carton.AddEgg(make_unique<Rotten_Egg>());
+
+   //Eat the eggs
+   carton.remove_and_eat(0);
+   carton.remove_and_eat(1);
+   carton.remove_and_eat(2);
+}
